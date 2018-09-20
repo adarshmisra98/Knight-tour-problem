@@ -303,12 +303,12 @@ def group_info():
 	return
 
 m = tkinter.Tk()
-m.geometry("550x650")
+m.geometry("650x750")
 m.title('Knight\'s Tour')
 heading = tkinter.Text(m,width=50,height=2)
-a = tkinter.Label(m,width=25, text='Value of N')
-b = tkinter.Label(m,width=25, text='Value of x')
-c = tkinter.Label(m,width=25, text='Value of y')
+a = tkinter.Label(m,width=40,height=3, text='Value of N \n (No. of squares in a row or column in chessboard)')
+b = tkinter.Label(m,width=40, height = 3,text='Value of x \n (Initial x poisition of knight on chessboard)')
+c = tkinter.Label(m,width=40, height = 3, text='Value of y \n (Initial y position of knight on chessboard)')
 e1 = tkinter.Entry(m,width=25)
 e2 = tkinter.Entry(m,width=25)
 e3 = tkinter.Entry(m,width=25)

@@ -7,60 +7,44 @@ import tkinter
 from tkinter import *
 from tkinter import messagebox
 
-# Function checks if point is not visited and lies inside the board(used for Warnsdorff)
-def safe(x,y,board,N):
-	return (x < N and x >= 0 and y < N and y >= 0 and board[x][y] == 0)
-
-# Function checks if point is not visited and lies inside the board(used for backtracking)
-# Different functions because board is intialised with -1 and 0 in backtracking and wanrsdorff respectively
-def safebacktrack(x,y,board,N):
+def IsSafeBacktrack(x,y,board,N):
 	return (x < N and x >= 0 and y < N and y >= 0 and board[x][y] == -1)
 
 def backtrack(x,y,N,start_time):
-	# Declare different directions in which Knight moves
 	dx=[2, 1, -1, -2, -2, -1, 1, 2]
 	dy=[1, 2, 2, 1, -1, -2, -2, -1]
-	# Initialize solution matrix with -1
-	sol=np.zeros([N,N]) - 1
-	# Initialize first point as visited
+	sol=np.zeros([N,N])
+	for i in range(N):
+		for j in range(N):
+			sol[i][j]=-1
 	sol[x][y]=0;
-	foundsol=solvebacktrack(x,y,1,sol,N,dx,dy)
+	foundSolution=solveUtil(x,y,1,sol,N,dx,dy)
 	for i in range(N):
 		for j in range(N):
 	 		if sol[i][j] == -1:
-	 			foundsol=False
-	# If no solution found foundsol is false
-	if foundsol == False :
-		# UI
+	 			foundSolution=False
+	if foundSolution == False :
 		t.insert(tkinter.END,"Couldn't find a solution")
 		t.tag_config("center",justify='center')
 		t.tag_add("center", "1.0",tkinter.END)
 		values.insert(tkinter.END,"")
 		values.tag_add("center", "1.0",tkinter.END)
 		return
-	# Else solution exists
-	# Mark the end time for algorithm completion 
 	end_time = time()
-	r = "Time taken to execute backtracking Algorithm " + str(round((end_time-start_time)*1000,2)) + " ms"
+	r = "Time taken to execute Backtracking Algorithm " + str(round((end_time-start_time)*1000,2)) + " ms"
 	t.insert(tkinter.END,r)
 	t.tag_config("center",justify='center')
 	t.tag_add("center", "1.0",tkinter.END)
 	k = 0
-	# L will contain the Knight's path
 	L=[]
-	# Search for 0 1 2 3 and append to L 
 	while k <= N*N-1:
 		for i in range(N):
 			for j in range(N):
 				if sol[i][j] == k:
 					L.append([i,j])
 					k += 1
-	# Take the final coordinates in finalx and finaly 
 	final_x,final_y = L[len(L)-1][0] , L[len(L)-1][1]
-	# Check if tour is open/closed tour
 	initial_x,initial_y = x,y
-	# If knight can move in one step from last position to first position : Tour is closed
-	# Else tour is open
 	f = 0
 	for i in range(8):
 		if(final_x+dx[i] == initial_x and final_y+dy[i] == initial_y):
@@ -70,7 +54,6 @@ def backtrack(x,y,N,start_time):
 		show1.insert(tkinter.END,"Closed Tour observed\n")
 	else:
 		show1.insert(tkinter.END,"Open Tour observed\n")
-	# UI
 	if(N<=10):
 		board = np.zeros((N,N))
 		k = 0
@@ -91,60 +74,24 @@ def backtrack(x,y,N,start_time):
 	values.tag_config("center",justify='center')
 	show1.tag_config("center",justify='center')
 	show1.tag_add("center", "1.0",tkinter.END)
-	# If possible draw 
 	if N <= 32 :
-		printboard(N,L)
+		graphicTour(N,L)
 	return
 
-# Backtracking's utility function
-def solvebacktrack(positionx,positiony,movei,sol,N,dx,dy):
-	# Breaking condition ie when all vertices are visited retrun true to indicate solution is found
+def solveUtil(positionx,positiony,movei,sol,N,dx,dy):
 	if(movei==N*N):
 		return True
-	# Try all the 8 possible directions 
 	for i in range(8):
 		Nextx = positionx + dx[i]
 		Nexty = positiony + dy[i]
-		# If the next point is safe mark the path index (movei) in sol matrix
-		if (safebacktrack(Nextx,Nexty,sol,N)):
+		if (IsSafeBacktrack(Nextx,Nexty,sol,N)):
 			sol[Nextx][Nexty]=movei
-			# If the chosen point gave a solution return true,add 1 to path index and continue with the new pts
-			if(solvebacktrack(Nextx,Nexty,movei+1,sol,N,dx,dy)==True):
+			if(solveUtil(Nextx,Nexty,movei+1,sol,N,dx,dy)==True):
 				return True
-			# Else mark as unvisited (-1)
 			sol[Nextx][Nexty]=-1
-	# Return false if no solution found
 	return False
 
-# Degree function for Warnsdorff Algo to find the min degree node 
-def degreecheck(posx,posy,moves,board,N):
-	# No of points that are accessible to this point 
-	accessibility = 0
-	for i in range(8):
-		# Check all 8 points for validity and update if valid 
-		if safe(posx+moves[i][0],posy+moves[i][1],board,N):
-			accessibility += 1
-	return accessibility
-
-# Take x and y from the pair move and travel in 8 directions using moves array 
-def knightnextmoves(move,moves,board,N):
-	positionx = move[0]
-	positiony = move[1]
-	# Max accesibility for a point 	
-	accessibility = 8
-	for i in range(8):
-		Nextx = positionx + moves[i][0]
-		Nexty = positiony + moves[i][1]
-		# Update  the point with min Accessibility using NewAccessibility  variable 
-		NewAccessibility = degreecheck(Nextx,Nexty,moves,board,N)
-		if safe(Nextx,Nexty,board,N) and NewAccessibility < accessibility:
-			move[0] = Nextx
-			move[1] = Nexty
-			accessibility = NewAccessibility
-	return
-
-# UI
-def printboard(N,LeftCoordinate):
+def graphicTour(N,LeftCoordinate):
 	Knight = pygame.image.load("knight.png")
 	pygame.init()
 	screen = pygame.display.set_mode((32*N,32*N))
@@ -176,8 +123,7 @@ def printboard(N,LeftCoordinate):
 			screen.blit(text[i],Floor[i])
 		pygame.display.update()
 
-# If solution found return true for Warnsdorff
-# Check if all board points are zero if yes solution found 
+# To check if we have found out a solution
 def ifSolution(Board,N):
 	for i in range(N):
 		for j in range(N):
@@ -185,7 +131,6 @@ def ifSolution(Board,N):
 				return False
 	return True
 
-# UI
 def basics():
 	values.delete(1.0,tkinter.END)
 	t.delete(1.0,tkinter.END)
@@ -202,7 +147,6 @@ def basics():
 	else:
 		return -1 , -1 , -1
 
-# To check if the input given is an integral value or not
 def check(a,b,c):
 	r = ""
 	if(e1.get().isdigit()==False):
@@ -218,23 +162,21 @@ def check(a,b,c):
 	values.tag_add("center", "1.0",tkinter.END)
 	return
 
-# To check whether the input entered is valid or not
 def validity(a,b,c):
 	r = ""
-	if(b<0 or b>=a):
+	if(b<0 and b>=a):
 		r = "Value of positionx is out of bounds"
-	elif(c<0 or c>=a):
+	elif(c<0 and c>=a):
 		r = "Value of positiony is out of bounds"
 	else:
 		return True
-	t.insert("1.0",r)
+	t.insert(tkinter.END,r)
 	t.tag_config("center",justify='center')
 	t.tag_add("center", "1.0",tkinter.END)
 	values.insert(tkinter.END,"")
 	values.tag_add("center", "1.0",tkinter.END)
 	return False
 
-# Backtracking setup function and start timer
 def method1():
 	N , positionx , positiony = basics()
 	if(N==-1 and positionx==-1 and positiony==-1):
@@ -249,41 +191,69 @@ def method1():
 	backtrack(positionx,positiony,N,start_time)
 	return
 
-# Warnsdorff setup function 
+# Denotes whether the position is within the board and is not visited and hence is safe to move
+def IsSafe(x,y,board,N):
+	return (x < N and x >= 0 and y < N and y >= 0 and board[x][y] == 0)
+
+# To check how many positions are accessible from a given position that is the count of positions where knight can shift to from one position
+def checkAccessibility(posx,posy,moves,board,N):
+	accessibility = 0
+	for i in range(8):
+		# Can move to that position if yes then accessibility is increased by 1
+		if IsSafe(posx+moves[i][0],posy+moves[i][1],board,N):
+			accessibility += 1
+	return accessibility
+
+def getNextMoves(move,moves,board,N):
+	positionx = move[0]
+	positiony = move[1]
+	accessibility = 8
+	for i in range(8):
+		Nextx = positionx + moves[i][0]
+		Nexty = positiony + moves[i][1]
+		# Accessibility checks for every possible next next position knight can move to from the given next position
+		NewAccessibility = checkAccessibility(Nextx,Nexty,moves,board,N)
+		if IsSafe(Nextx,Nexty,board,N) and NewAccessibility < accessibility:
+			move[0] = Nextx
+			move[1] = Nexty
+			accessibility = NewAccessibility
+	# move are updated as position
+	return
+
+# Implementation of Warnsdorff's Algorithm
 def method2():
-	# Input from UI
 	N , positionx , positiony = basics()
 	if(N==-1 and positionx==-1 and positiony==-1):
 		check(N,positionx,positiony)
 		return
-	# To check the validity of input given
 	if(validity(N,positionx,positiony)==False):
 		return
-	show.insert("1.0","Results \n Time analysisn \n")
+	show.insert("1.0","Results \n Time analysis \n")
 	show.tag_config("center",justify='center')
 	show.tag_add("center", "1.0",tkinter.END)
-	# Mark starting time
 	start_time = time()
 	x = positionx
 	y = positiony
 	moveNumber = 2
 	move = [positionx,positiony]
+	# Direction in which knight can move
 	moves = [[2,1],[2,-1],[1,2],[1,-2],[-1,2],[-1,-2],[-2,1],[-2,-1]]
-	# Making a NxN chessboard and initializing with zero
+	# Creating chess board
 	Board = np.zeros([N,N])
-	# Mark visited 1 
+	# Marking 1st position of chess board as visited
 	Board[positionx][positiony] = 1
 	L = []
 	for i in range(N*N):
 		move[0] = positionx
 		move[1] = positiony
-		knightnextmoves(move,moves,Board,N)
+		getNextMoves(move,moves,Board,N)
 		positionx = move[0]
 		positiony = move[1]
 		Board[positionx][positiony] = moveNumber
+		# Incrementing the moveNumber everytime we get an answer
 		moveNumber += 1
 	Board[positionx][positiony] -= 1
-	#Check is solution exists
+	# To check whether solution exists or not
 	sol = ifSolution(Board,N)
 	if sol:
 		k = 1
@@ -293,6 +263,33 @@ def method2():
 					if Board[i][j] == k:
 						L.append([i,j])
 						k += 1
+	else:
+		moves = [[2,1],[-2,1],[2,-1],[-2,-1],[1,2],[-1,2],[1,-2],[-1,-2]]
+		Board = np.zeros([N,N])
+		positionx = x
+		positiony = y
+		Board[positionx][positiony] = 1
+		L = []
+		moveNumber = 2
+		move = [positionx,positiony]
+		for i in range(N*N):
+			move[0] = positionx
+			move[1] = positiony
+			getNextMoves(move,moves,Board,N)
+			positionx = move[0]
+			positiony = move[1]
+			Board[positionx][positiony] = moveNumber
+			moveNumber += 1
+		Board[positionx][positiony] -= 1
+		sol = ifSolution(Board,N)
+		if sol:
+			k = 1
+			while k <= N*N:
+				for i in range(N):
+					for j in range(N):
+						if Board[i][j] == k:
+							L.append([i,j])
+							k += 1
 	if len(L) == 0:
 		r = "Couldn't find a solution"
 		t.insert(tkinter.END,r)
@@ -302,7 +299,6 @@ def method2():
 		values.tag_add("center", "1.0",tkinter.END)
 		return
 	end_time = time()
-	# Checking whether the tour is opened or closed 
 	final_x,final_y = L[len(L)-1]
 	initial_x,initial_y = positionx,positiony
 	f = 0
@@ -314,7 +310,6 @@ def method2():
 		show1.insert(tkinter.END,"Closed Tour observed\n")
 	else:
 		show1.insert(tkinter.END,"Open Tour observed\n")
-	# UI
 	if(N<=10):
 		board = np.zeros((N,N))
 		k = 0
@@ -340,10 +335,10 @@ def method2():
 	t.tag_config("center",justify='center')
 	t.tag_add("center", "1.0",tkinter.END)
 	if N <= 32:
-		printboard(N,L)
+		graphicTour(N,L)
 	return
 
-# Information about group members
+# Displays names of group members
 def group_info():
 	h = "Adarsh Misra : 201601004\n"
 	h = h + "Nishi Doshi     : 201601408\n"
@@ -351,62 +346,49 @@ def group_info():
 	messagebox.showinfo("Group Members",h)
 	return
 
-# Definitions pertaining to open and closed tour
+# Shows definitions of open tour and closed tour
 def about():
 	values.delete(1.0,tkinter.END)
 	t.delete(1.0,tkinter.END)
 	show1.delete(1.0,tkinter.END)
 	show.delete(1.0,tkinter.END)
-	show1.insert(tkinter.END,"Directions of use")
-	# h = "Open Tour : When kinght at final poisition in the tour cannot reach the \ninitial position in one move; open tour is observed\n"
-	# h = h + "Closed Tour : When kinght at final poisition in the tour reaches the \ninitial position in one move; open tour is observed\n"
-	h = "Enter the values in the input field provide don top of screen\n"
-	h = h + "Clicking Backtracking Algorithm button runs the backtracking algorithm on \nthe given inputs\n"
-	h = h + "Clicking Warnsdorff Algorithm button runs the wanrsdorff algorithm on \nthe given inputs\n"
-	h = h + "Clicking Show Analysis button runs both the algorithms in background \nand compares the time needed\n"
-	h = h + "Clicking Creator\'s Info button shows information of programmers who\n contributed to develop this application\n"
-	h = h + "Clicking Close button closes the application\n" 
-	values.insert("1.0",h)
+	show1.insert(tkinter.END,"Basic Definitions")
+	h = "Open Tour : When kinght at final poisition in the tour cannot reach the \ninitial position in one move; open tour is observed\n"
+	h = h + "Closed Tour : When kinght at final poisition in the tour reaches the \ninitial position in one move; open tour is observed\n"
+	values.insert(tkinter.END,h)
 	return
 
-# To close the app
+# When close button is pressed for window to close
 def close():
 	m.destroy()
 
-# Warnsdorff
 def method2_2():
-	# Taking the input from screen 
 	N , positionx , positiony = basics()
 	if(N==-1 and positionx==-1 and positiony==-1):
 		check(N,positionx,positiony)
 		return -1 , -1
-	# Validate that input entered is correct or not 
 	if(validity(N,positionx,positiony)==False):
 		return -1 , -1
-	# Noting the start time for running the algorithm
 	start_time = time()
 	x = positionx
 	y = positiony
 	moveNumber = 2
 	move = [positionx,positiony]
 	moves = [[2,1],[2,-1],[1,2],[1,-2],[-1,2],[-1,-2],[-2,1],[-2,-1]]
-	# Initializing NxN board with zeros
 	Board = np.zeros([N,N])
-	# Marking the visited position with the number of it is visited time
+	# Marking 1st position of chess board as visited
 	Board[positionx][positiony] = 1
 	L = []
 	for i in range(N*N):
 		move[0] = positionx
 		move[1] = positiony
-		# To get the next move of knight which is obtained by taking that position which has most number of acessibility points neat to it
-		knightnextmoves(move,moves,Board,N)
+		getNextMoves(move,moves,Board,N)
 		positionx = move[0]
 		positiony = move[1]
-		# Marking the visited position with the number of it is visited time
 		Board[positionx][positiony] = moveNumber
 		moveNumber += 1
 	Board[positionx][positiony] -= 1
-	# To check whether solution exists or not
+	# To check if a valid solution exists or not
 	sol = ifSolution(Board,N)
 	if sol:
 		k = 1
@@ -416,9 +398,35 @@ def method2_2():
 					if Board[i][j] == k:
 						L.append([i,j])
 						k += 1
+	else:
+		moves = [[2,1],[-2,1],[2,-1],[-2,-1],[1,2],[-1,2],[1,-2],[-1,-2]]
+		Board = np.zeros([N,N])
+		positionx = x
+		positiony = y
+		Board[positionx][positiony] = 1
+		L = []
+		moveNumber = 2
+		move = [positionx,positiony]
+		for i in range(N*N):
+			move[0] = positionx
+			move[1] = positiony
+			getNextMoves(move,moves,Board,N)
+			positionx = move[0]
+			positiony = move[1]
+			Board[positionx][positiony] = moveNumber
+			moveNumber += 1
+		Board[positionx][positiony] -= 1
+		sol = ifSolution(Board,N)
+		if sol:
+			k = 1
+			while k <= N*N:
+				for i in range(N):
+					for j in range(N):
+						if Board[i][j] == k:
+							L.append([i,j])
+							k += 1
 	if len(L) == 0:
 		return -1 , -1
-	# Marking the time to end
 	end_time = time()
 	final_x,final_y = L[len(L)-1]
 	initial_x,initial_y = positionx,positiony
@@ -429,14 +437,11 @@ def method2_2():
 			break
 	return end_time-start_time , f
 
-# Backtracking
 def method1_2():
-	# To derive the input from user
 	N , positionx , positiony = basics()
 	if(N==-1 and positionx==-1 and positiony==-1):
 		check(N,positionx,positiony)
 		return -1 , -1
-	# To validate the inputs entered
 	if(validity(N,positionx,positiony)==False):
 		return -1 , -1
 	start_time = time()
@@ -444,10 +449,12 @@ def method1_2():
 	y = positiony
 	dx=[2, 1, -1, -2, -2, -1, 1, 2]
 	dy=[1, 2, 2, 1, -1, -2, -2, -1]
-	# Chessboard initialization with -1
-	sol=np.zeros([N,N]) - 1
+	sol=np.zeros([N,N])
+	for i in range(N):
+		for j in range(N):
+			sol[i][j]=-1
 	sol[x][y]=0;
-	foundSolution=solvebacktrack(x,y,1,sol,N,dx,dy)
+	foundSolution=solveUtil(x,y,1,sol,N,dx,dy)
 	for i in range(N):
 		for j in range(N):
 	 		if sol[i][j] == -1:
@@ -472,9 +479,7 @@ def method1_2():
 			break
 	return end_time-start_time , f
 
-# To analyze both the methods for a given position 
 def analyze():
-	# Analyze for warnsdorff algorithm
 	times , f = method2_2()
 	if (f==-1 or times==-1):
 		values.insert("1.0","Some error in inputs or algorithm does not support this algorithm")
@@ -482,12 +487,11 @@ def analyze():
 		values.tag_add("center", "1.0",tkinter.END)
 		return
 	s = "Warnsdorff\'s Algorithm analysis \n"
-	s = s + "Time taken to find answer : " + str(round(times*1000,4)) + " ms \n"
+	s = s + "Time taken to find answer : " + str(round(times*1000,4)) + "ms \n"
 	if(f==1):
 		s = s + "Closed Tour observed\n\n"
 	else:
 		s = s + "Open Tour observed\n\n"
-	# Analyze for backtracking algorithm
 	times2 , f2 = method1_2()
 	if (f2==-1 or times2==-1):
 		values.insert("1.0","Some error in inputs or algorithm does not support this algorithm")
@@ -495,7 +499,7 @@ def analyze():
 		values.tag_add("center", "1.0",tkinter.END)
 		return
 	s = s + "Backtracking Algorithm analysis \n"
-	s = s + "Time taken to find answer : " + str(round(times2*1000,4)) + " ms \n"
+	s = s + "Time taken to find answer : " + str(round(times2*1000,4)) + "ms \n"
 	if(f2==1):
 		s = s + "Closed Tour observed\n"
 	else:
@@ -511,11 +515,8 @@ def analyze():
 	values.tag_add("center", "1.0",tkinter.END)
 	return
 
-# UI
 m = tkinter.Tk()
-# Setting dimensions of UI
 m.geometry("650x650")
-# Giving title to the UI screen
 m.title('Knight\'s Tour')
 heading = tkinter.Text(m,width=50,height=2)
 a = tkinter.Label(m,width=40,height=3, text='Value of N \n (No. of squares in a row or column in chessboard)')
@@ -524,12 +525,10 @@ c = tkinter.Label(m,width=40, height = 3, text='Value of y \n (Initial y positio
 e1 = tkinter.Entry(m,width=25)
 e2 = tkinter.Entry(m,width=25)
 e3 = tkinter.Entry(m,width=25)
-# Adding buttons to select algorithm that should run
 b1 = tkinter.Button(m, text='Backtracking Algorithm',width=25, command=method1)
 b2 = tkinter.Button(m, text='Warnsdorff\'s Algorithm', width=25, command=method2)
 b3 = tkinter.Button(m, text='Creater\'s Info', width=25,command=group_info)
-b4 = tkinter.Button(m, text='Directions of use',width=25,command=about)
-# Adding close button
+b4 = tkinter.Button(m, text='Basic Definitions',width=25,command=about)
 b5 = tkinter.Button(m, text='Close',width=25,command=close)
 b6 = tkinter.Button(m, text='Show Analysis',width=25,command=analyze)
 show = tkinter.Text(m,width=75,height=2)
@@ -542,7 +541,6 @@ heading.tag_add("center", "1.0",tkinter.END)
 e1.insert(tkinter.END,'4')
 e2.insert(tkinter.END,'0')
 e3.insert(tkinter.END,'0')
-# Placing the widgets on app screen
 heading.grid(row=0,column=0,columnspan=3)
 a.grid(row=1,column=0)
 b.grid(row=2,column=0)

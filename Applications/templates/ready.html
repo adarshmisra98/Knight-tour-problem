@@ -1,0 +1,14 @@
+{% extends 'layout.html' %}
+
+{% block body %} 
+	<div class="jumbotron text-center">
+		<br><br>
+		<p> The message you actually entered was : </p>
+         {% for key, value in result.items() %}
+	      <p>               {{ value }} </p>
+         {% endfor %}
+		<p>Your file is ready. Have a look at it. Can u find the hidden message?</p>
+		<br>
+		<p>{{value}}</p>
+	</div>
+{% endblock %}

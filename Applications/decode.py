@@ -1,20 +1,6 @@
 import numpy as np
 import os
 
-prefixed = [filename for filename in os.listdir('.') if filename.startswith("Info")]
-f = open(prefixed[0],"r")
-str = ""
-for w in f:
-    str = str + w
-f.close()
-
-name = prefixed[0]
-name = name[:-4]
-vals = [x for x in name.split(" ")]
-N = int(vals[1])
-x = int(vals[2])
-y = int(vals[3])
-
 def safe(x,y,board,N):
 	return (x < N and x >= 0 and y < N and y >= 0 and board[x][y] == 0)
 
@@ -78,20 +64,35 @@ def method2(N,positionx,positiony):
         exit()
     return Board , L
 
-Board , L = method2(N,x,y)
+def decoder(file):
+    print(file)
+    f = open(file,"r")
+    str = ""
+    for w in f:
+        str = str + w
+    f.close()
 
-k = 0
-words = [i for i in str.split(" ")]
-word_matrix = np.chararray((N,N), itemsize=100)
-for i in range(N):
-    for j in range(N):
-        word_matrix[i][j] = words[k]
-        k = k + 1
+    name = file
+    name = name[:-4]
+    vals = [x for x in name.split(" ")] 
+    N = int(vals[1])
+    x = int(vals[2])
+    y = int(vals[3])
+    print(str)
+    Board , L = method2(N,x,y)
 
-ans = ""
-for i in range(len(L)):
-    if(word_matrix[L[i][0]][L[i][1]].decode() == "-"):
-        break
-    ans = ans + word_matrix[L[i][0]][L[i][1]].decode() + " "
+    k = 0
+    words = [i for i in str.split(" ")]
+    word_matrix = np.chararray((N,N), itemsize=100)
+    for i in range(N):
+        for j in range(N):
+            word_matrix[i][j] = words[k]
+            k = k + 1
 
-print(ans)
+    ans = ""
+    for i in range(len(L)):
+        if(word_matrix[L[i][0]][L[i][1]].decode('utf-8') == "-"):
+            break
+        ans = ans + word_matrix[L[i][0]][L[i][1]].decode() + " "
+
+    return ans

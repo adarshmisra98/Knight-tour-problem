@@ -1,4 +1,4 @@
-# Knight-s-Tour-Problem
+# Knight-Tour-Problem
 
 Modules used : Numpy, PyGame, Tkinter
 
@@ -9,3 +9,7 @@ Follow the following steps to run the app:
 4. Run the code on command line using python3 app.py command.
 
 Enter values in application screen to see the algorithmic output that is time analysis and tracing path for knight to move on chessboard corresponding to the input.
+
+Application of Knight Tour Problem in Cryptography
+
+Modules used : Flask

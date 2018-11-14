@@ -33,5 +33,21 @@ def my_form_post():
     result = request.form
     return render_template('ready.html',result=result,value=text)
 
+@app.route('/send_mail')
+def send_mail():
+	return render_template('send_mail.html')
+
+@app.route('/send_mail', methods=['POST'])
+def send_mail_post():
+    text = request.form['message']
+    from1 = request.form['from']
+    to = request.form['to']
+    password = request.form['password']
+    subject = request.form['subject']
+    body = request.form['body']
+    sendmail(from1,password,to,subject,body,text)
+    result = request.form
+    return render_template('mail_sent.html',result=result,value=text)
+
 if __name__ == '__main__':
 	app.run(debug=True)

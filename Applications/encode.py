@@ -3,8 +3,8 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from random import randint
 from email import encoders
+from random import randint
 import numpy as np
-import getpass
 import smtplib
 import os
 
@@ -70,7 +70,7 @@ def method2(N,positionx,positiony):
         x = randint(0,N-1)
         y = randint(0,N-1)
         method2(N,x,y)
-    return Board , L
+    return Board , L, N, x, y
 
 def create_file(s):
     words = [i for i in s.split(' ')]
@@ -84,22 +84,22 @@ def create_file(s):
     x = randint(0,N-1)
     y = randint(0,N-1)
 
-    Board , L = method2(N,x,y)
+    Board , L , N , x, y= method2(N,x,y)
 
     j = 0
-    word_matrix = np.chararray((N,N) , itemsize = 100)
+    word_matrix = np.chararray((N,N), unicode=True, itemsize = 100)
 
     for i in range(len(L)):
         if(j<len(words)):
             word_matrix[L[i][0]][L[i][1]] = words[j]
         else:
-            word_matrix[L[i][0]][L[i][1]] = "-"
+            word_matrix[L[i][0]][L[i][1]] = '-'
         j = j +1
 
     st = ""
     for i in range(N):
         for j in range(N):
-            st = st + word_matrix[i][j].decode('utf-8').strip() + " "
+            st = st + str(word_matrix[i][j]) + " "
 
     prefixed = [filename for filename in os.listdir('.') if filename.startswith("Info")]
     for i in range(len(prefixed)):
@@ -110,3 +110,61 @@ def create_file(s):
     f.write(st)
     f.close()
     return st
+
+def sendmail(fromaddr,password,toaddr,subject,body,s):
+    msg = MIMEMultipart()
+    msg['From'] = fromaddr
+    msg['To'] = toaddr
+    msg['Subject'] = subject
+    msg.attach(MIMEText(body, 'plain'))
+
+    words = [i for i in s.split(' ')]
+    possible = [((i+6)*(i+6)) for i in range(15)]
+
+    N = len(words)
+    i = 0
+    while(N>possible[i]):
+        i = i +1
+    N = i+1+6
+    x = randint(0,N-1)
+    y = randint(0,N-1)
+
+    Board , L , N , x, y= method2(N,x,y)
+
+    j = 0
+    word_matrix = np.chararray((N,N), unicode=True, itemsize = 100)
+
+    for i in range(len(L)):
+        if(j<len(words)):
+            word_matrix[L[i][0]][L[i][1]] = words[j]
+        else:
+            word_matrix[L[i][0]][L[i][1]] = '-'
+        j = j +1
+    st = ""
+
+
+    for i in range(N):
+        for j in range(N):
+            st = st + word_matrix[i][j] + " "
+
+    prefixed = [filename for filename in os.listdir('.') if filename.startswith("Info")]
+    for i in range(len(prefixed)):
+        os.remove(prefixed[i])
+
+    file_name = "Info " + str(N) + " " + str(x) + " " + str(y) + ".txt"
+    f = open(file_name,"w+")
+    f.write(st)
+    f.close()
+
+    attachment = open(file_name, "rb")
+    p = MIMEBase('application', 'octet-stream')
+    p.set_payload((attachment).read())
+    encoders.encode_base64(p)
+    p.add_header('Content-Disposition', "attachment; filename= %s" % file_name)
+    msg.attach(p)
+    s = smtplib.SMTP_SSL('smtp.gmail.com')
+    s.login(fromaddr, password)
+    text = msg.as_string()
+    s.sendmail(fromaddr, toaddr, text)
+    s.quit()
+    attachment.close()

@@ -1,0 +1,45 @@
+{% extends 'layout.html' %}
+
+{% block body %} 
+	<div class="jumbotron text-center">
+		<br>
+		<form method="POST">
+			<table align="center">
+			<tr><fieldset>
+				<td><label>From : </label>  </td>      
+				<td><input type="text" name="from" required></td>
+			</fieldset></tr>
+			
+			<tr><fieldset>
+				<td>
+			<label>Password : </label></td>      
+				<td><input type="password" name="password" required></td>
+			</fieldset></tr>
+			
+			<tr><fieldset>
+				<td><label>To : </label></td>      
+				<td><input type="text" name="to" required></td>
+			</fieldset></tr>
+			
+			<tr><fieldset>
+				<td><label>Subject : </label></td>      
+				<td> <input type="text" name="subject" required></td>
+			</fieldset></tr>
+			
+			<tr><fieldset>
+				<td><label>Body : </label></td>      
+				<td><input type="text" name="body" required></td>
+			</fieldset></tr>
+    		
+			<tr><fieldset><td><label>Hidden Message to be sent as a file : </label></td><td><textarea cols="50" rows="10" name="message" required></textarea></td></fieldset></tr>
+    		<tr>
+    			<td>
+    			
+    		</td><td>
+    		Click the button below to download the encoded file.
+    		<input type="submit" value="Send">
+    	</td></tr>
+    	</table>
+		</form>
+	</div>
+{% endblock %}
